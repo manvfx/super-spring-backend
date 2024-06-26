@@ -1,0 +1,47 @@
+spring:
+  data:
+    mongodb:
+      usernames: manvfx
+      password: manvfx
+      host: localhost
+      port: 27017
+      database: aryadb
+      authentication-database: admin
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 2MB
+      max-request-size: 2MB
+    thymeleaf:
+      cache: false
+    security:
+      user:
+        name: user
+        password: password
+    profiles:
+      active: default
+# Swagger UI configuration
+springdoc:
+  swagger-ui:
+    # Enable Swagger UI
+    enabled: true
+    # Enable operation filtering
+    filter: false
+    # Sort operations alphabetically
+    operationsSorter: alpha
+
+aryahamrah:
+  openapi:
+    dev-url: http://localhost:8080
+    prod-url: https://api.aryahamrah.com
+
+# JWT configuration
+jwt:
+  secret: 123456789qwertklasdcznm
+  expiration: 3600000  # 1 hour in milliseconds
+
+## Logging configuration
+#logging:
+#  level:
+#    root: INFO
+#    org.springframework.web: DEBUG

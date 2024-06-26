@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  aryahamrah-app:
+    image: your_springboot_image   # Replace with your actual Spring Boot Docker image
+    container_name: aryahamrah_app
+    depends_on:
+      - mongodb
+      - redis
+      - elasticsearch
+      - rabbitmq
+      - logstash
+    ports:
+      - "8080:8080"
+    networks:
+      - aryahamrah-network
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo_db:27017/your_database
+      - SPRING_REDIS_HOST=redis
+      - SPRING_ELASTICSEARCH_URIS=http://elasticsearch:9200
+      - SPRING_RABBITMQ_HOST=rabbitmq
+    volumes:
+      - ./logs:/logs
+
+  mongodb:
+    image: mongo
+    container_name: mongo_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=manvfx
+      - MONGO_INITDB_ROOT_PASSWORD=manvfx
+    networks:
+      - aryahamrah-network
+
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - aryahamrah-network
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.3
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    networks:
+      - aryahamrah-network
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.13.3
+    container_name: logstash
+    ports:
+      - "5044:5044"
+      - "9600:9600"
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
+    networks:
+      - aryahamrah-network
+    depends_on:
+      - elasticsearch
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:7.13.3
+    container_name: filebeat
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - aryahamrah-network
+    depends_on:
+      - logstash
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - aryahamrah-network
+    environment:
+      - RABBITMQ_DEFAULT_USER=user
+      - RABBITMQ_DEFAULT_PASS=password
+
+networks:
+  aryahamrah-network:
+
+volumes:
+  mongo: {}
+  esdata: {}
